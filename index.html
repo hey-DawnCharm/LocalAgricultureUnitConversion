@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>农药肥料日常用量计算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: #f5f7f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .disclaimer-top {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        /* 容器 */
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* Tab导航 */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 15px;
+            background: white;
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 6px;
+            border: none;
+            background: transparent;
+            color: #555;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #2e7d32;
+            color: white;
+            font-weight: 500;
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        /* 面板内容 */
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* 卡片通用样式 */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card h3 {
+            color: #2e7d32;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e8f5e9;
+        }
+
+        .card .desc {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+
+        .formula {
+            background: #f1f8e9;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #558b2f;
+            margin-bottom: 12px;
+            font-family: monospace;
+        }
+
+        /* 表单组 */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 9px 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-row input:focus {
+            border-color: #43a047;
+        }
+
+        .input-row select {
+            padding: 9px 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            outline: none;
+            min-width: 65px;
+        }
+
+        /* 快捷按钮 */
+        .quick-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .quick-btn {
+            padding: 5px 10px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .quick-btn:hover {
+            background: #c8e6c9;
+        }
+
+        /* 操作按钮 */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1b5e20;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #555;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .btn-danger:hover {
+            background: #ffcdd2;
+        }
+
+        /* 结果区域 */
+        .result-box {
+            background: #f1f8e9;
+            border-left: 4px solid #43a047;
+            padding: 12px 14px;
+            border-radius: 6px;
+            margin-top: 12px;
+        }
+
+        .result-box .result-title {
+            font-size: 13px;
+            color: #558b2f;
+            margin-bottom: 6px;
+        }
+
+        .result-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        .result-value small {
+            font-size: 14px;
+            font-weight: normal;
+            color: #666;
+        }
+
+        .result-list {
+            margin-top: 8px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed #c5e1a5;
+            font-size: 14px;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item .name {
+            color: #555;
+        }
+
+        .result-item .val {
+            font-weight: 600;
+            color: #2e7d32;
+        }
+
+        /* 小数位控制 */
+        .decimal-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .decimal-control select {
+            padding: 4px 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* 模式切换 */
+        .mode-switch {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mode-switch button {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .mode-switch button.active {
+            background: #2e7d32;
+            color: white;
+            border-color: #2e7d32;
+        }
+
+        /* 套装行 */
+        .set-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .set-row input[type="text"] {
+            flex: 0 0 80px;
+            padding: 7px 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .set-row input[type="number"] {
+            flex: 1;
+            padding: 7px 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .set-row select {
+            padding: 7px 6px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .del-row-btn {
+            padding: 7px 10px;
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .add-row-btn {
+            width: 100%;
+            padding: 8px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px dashed #a5d6a7;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* 成分查询 */
+        .search-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-bar input:focus {
+            border-color: #43a047;
+        }
+
+        .category-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .category-tag {
+            padding: 4px 10px;
+            background: #f0f0f0;
+            color: #666;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .category-tag.active {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .ingredient-card {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .ingredient-card h4 {
+            color: #2e7d32;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .ingredient-card .alias {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .ingredient-card .info-row {
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .ingredient-card .info-row span:first-child {
+            color: #888;
+            display: inline-block;
+            min-width: 70px;
+        }
+
+        .ingredient-card .warning {
+            margin-top: 8px;
+            padding: 6px 8px;
+            background: #fff8e1;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #f57f17;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* 单位换算网格 */
+        .conversion-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 600px) {
+            .conversion-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .conversion-section h4 {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .conv-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .conv-row input {
+            flex: 1;
+            padding: 7px 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .conv-row span {
+            font-size: 12px;
+            color: #666;
+            min-width: 35px;
+        }
+
+        /* 历史记录 */
+        .history-item {
+            background: #fafafa;
+            border-radius: 6px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-left: 3px solid #43a047;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .history-type {
+            font-size: 13px;
+            font-weight: 500;
+            color: #2e7d32;
+        }
+
+        .history-time {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .history-content {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .history-actions button {
+            padding: 3px 8px;
+            font-size: 11px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .empty-history {
+            text-align: center;
+            padding: 30px;
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        /* 底部安全提示 */
+        .safety-footer {
+            background: #fff8e1;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 10px;
+        }
+
+        .safety-footer h4 {
+            color: #f57f17;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .safety-footer ul {
+            list-style: none;
+            font-size: 12px;
+            color: #795548;
+        }
+
+        .safety-footer li {
+            padding: 3px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .safety-footer li::before {
+            content: "•";
+            position: absolute;
+            left: 4px;
+            color: #f57f17;
+        }
+
+        /* 错误提示 */
+        .error-tip {
+            color: #c62828;
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-tip.show {
+            display: block;
+        }
+
+        /* 响应式 */
+        @media (min-width: 768px) {
+            .header h1 {
+                font-size: 26px;
+            }
+
+            .two-col {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            .tab-btn {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .header, .tabs, .action-btns, .safety-footer, .quick-btns, .mode-switch, .add-row-btn, .del-row-btn {
+                display: none !important;
+            }
+            .tab-panel {
+                display: block !important;
+            }
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>农药肥料日常用量计算器</h1>
+    <div class="subtitle">按标签推荐用量换算，仅供参考</div>
+    <div class="disclaimer-top">
+        <strong>⚠️ 免责声明：</strong>本工具计算结果仅供参考，不能替代农药/肥料标签、当地农技人员指导和法律法规。使用前必须阅读产品标签，严格遵守用量、安全间隔期、防护和禁限用规定。
+    </div>
+</div>
+
+<div class="container">
+    <!-- Tab导航 -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="calc">用量换算</button>
+        <button class="tab-btn" data-tab="ingredient">成分查询</button>
+        <button class="tab-btn" data-tab="dilute">稀释倍数</button>
+        <button class="tab-btn" data-tab="area">面积用量</button>
+        <button class="tab-btn" data-tab="unit">单位换算</button>
+        <button class="tab-btn" data-tab="history">历史记录</button>
+    </div>
+
+    <!-- 功能一：用量换算 -->
+    <div class="tab-panel active" id="tab-calc">
+        <div class="card">
+            <h3>用量换算</h3>
+            <p class="desc">根据标签推荐的兑水量，快速计算不同用水量下的用药量</p>
+
+            <div class="mode-switch">
+                <button class="active" data-mode="single">单瓶/单剂换算</button>
+                <button data-mode="set">套装/多瓶换算</button>
+            </div>
+
+            <!-- 单剂模式 -->
+            <div id="single-mode">
+                <div class="formula">目标用药量 = 原药量 × 目标水量 ÷ 原兑水量</div>
+
+                <div class="form-group">
+                    <label>原药量</label>
+                    <div class="input-row">
+                        <input type="number" id="single-dose" placeholder="例如：500" value="">
+                        <select id="single-dose-unit">
+                            <option value="ml">ml</option>
+                            <option value="L">L</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>原兑水量</label>
+                    <div class="input-row">
+                        <input type="number" id="single-water" placeholder="例如：2000" value="">
+                        <select id="single-water-unit">
+                            <option value="jin">斤</option>
+                            <option value="kg">公斤</option>
+                            <option value="L">升</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>目标水量</label>
+                    <div class="input-row">
+                        <input type="number" id="single-target" placeholder="例如：40" value="">
+                        <select id="single-target-unit">
+                            <option value="jin">斤</option>
+                            <option value="kg">公斤</option>
+                            <option value="L">升</option>
+                        </select>
+                    </div>
+                    <div class="quick-btns">
+                        <button class="quick-btn" data-water="30">30斤</button>
+                        <button class="quick-btn" data-water="40">40斤</button>
+                        <button class="quick-btn" data-water="100">100斤</button>
+                        <button class="quick-btn" data-water="200">200斤</button>
+                        <button class="quick-btn" data-water="400">400斤</button>
+                    </div>
+                </div>
+
+                <div class="decimal-control">
+                    结果保留小数：
+                    <select id="single-decimal">
+                        <option value="0">0位</option>
+                        <option value="1">1位</option>
+                        <option value="2" selected>2位</option>
+                        <option value="3">3位</option>
+                        <option value="4">4位</option>
+                    </select>
+                    <span style="margin-left:10px;color:#999;font-size:11px;">* ml与g近似换算，实际以标签为准</span>
+                </div>
+
+                <div class="result-box" id="single-result" style="display:none;">
+                    <div class="result-title">计算结果</div>
+                    <div class="result-value"><span id="single-result-val">0</span> <small id="single-result-unit">ml</small></div>
+                </div>
+            </div>
+
+            <!-- 套装模式 -->
+            <div id="set-mode" style="display:none;">
+                <div class="formula">每瓶目标用量 = 该瓶原规格 × 目标水量 ÷ 原兑水量</div>
+
+                <div class="form-group">
+                    <label>原兑水量</label>
+                    <div class="input-row">
+                        <input type="number" id="set-water" placeholder="例如：2000" value="">
+                        <select id="set-water-unit">
+                            <option value="jin">斤</option>
+                            <option value="kg">公斤</option>
+                            <option value="L">升</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>目标水量</label>
+                    <div class="input-row">
+                        <input type="number" id="set-target" placeholder="例如：40" value="">
+                        <select id="set-target-unit">
+                            <option value="jin">斤</option>
+                            <option value="kg">公斤</option>
+                            <option value="L">升</option>
+                        </select>
+                    </div>
+                    <div class="quick-btns">
+                        <button class="quick-btn set-quick" data-water="30">30斤</button>
+                        <button class="quick-btn set-quick" data-water="40">40斤</button>
+                        <button class="quick-btn set-quick" data-water="100">100斤</button>
+                        <button class="quick-btn set-quick" data-water="200">200斤</button>
+                        <button class="quick-btn set-quick" data-water="400">400斤</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>套装组成</label>
+                    <div id="set-rows">
+                        <div class="set-row">
+                            <input type="text" class="set-name" placeholder="名称" value="第1瓶">
+                            <input type="number" class="set-amount" placeholder="规格">
+                            <select class="set-unit">
+                                <option value="ml">ml</option>
+                                <option value="L">L</option>
+                                <option value="g">g</option>
+                                <option value="kg">kg</option>
+                            </select>
+                            <button class="del-row-btn" onclick="removeSetRow(this)">删除</button>
+                        </div>
+                    </div>
+                    <button class="add-row-btn" onclick="addSetRow()">+ 添加一瓶</button>
+                </div>
+
+                <div class="decimal-control">
+                    结果保留小数：
+                    <select id="set-decimal">
+                        <option value="0">0位</option>
+                        <option value="1">1位</option>
+                        <option value="2" selected>2位</option>
+                        <option value="3">3位</option>
+                        <option value="4">4位</option>
+                    </select>
+                </div>
+
+                <div class="result-box" id="set-result" style="display:none;">
+                    <div class="result-title">各瓶用量计算结果</div>
+                    <div class="result-list" id="set-result-list"></div>
+                </div>
+            </div>
+
+            <div class="action-btns">
+                <button class="btn btn-primary" onclick="copyCalcResult()">复制结果</button>
+                <button class="btn btn-secondary" onclick="resetCalc()">重置</button>
+                <button class="btn btn-secondary" onclick="window.print()">打印</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能二：成分查询 -->
+    <div class="tab-panel" id="tab-ingredient">
+        <div class="card">
+            <h3>农药肥料成分查询</h3>
+            <p class="desc">输入成分名称、别名或商品名进行模糊搜索，信息仅供科普参考</p>
+
+            <div class="search-bar">
+                <input type="text" id="ingredient-search" placeholder="输入成分名称、别名、商品名...">
+            </div>
+
+            <div class="category-filter" id="category-filter">
+                <button class="category-tag active" data-cat="all">全部</button>
+                <button class="category-tag" data-cat="杀虫剂">杀虫剂</button>
+                <button class="category-tag" data-cat="杀螨剂">杀螨剂</button>
+                <button class="category-tag" data-cat="杀菌剂">杀菌剂</button>
+                <button class="category-tag" data-cat="除草剂">除草剂</button>
+                <button class="category-tag" data-cat="植物生长调节剂">调节剂</button>
+                <button class="category-tag" data-cat="叶面肥">叶面肥</button>
+                <button class="category-tag" data-cat="肥料">肥料</button>
+            </div>
+
+            <div id="ingredient-results"></div>
+        </div>
+    </div>
+
+    <!-- 功能三：稀释倍数计算 -->
+    <div class="tab-panel" id="tab-dilute">
+        <div class="card">
+            <h3>稀释倍数计算</h3>
+            <p class="desc">已知稀释倍数，计算对应水量下的用药量</p>
+            <div class="formula">用药量(ml) = 目标水量(ml) ÷ 稀释倍数</div>
+
+            <div class="two-col">
+                <div class="form-group">
+                    <label>稀释倍数</label>
+                    <div class="input-row">
+                        <input type="number" id="dilute-times" placeholder="例如：1000" value="">
+                        <span style="font-size:13px;color:#888;">倍</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>目标水量</label>
+                    <div class="input-row">
+                        <input type="number" id="dilute-water" placeholder="例如：40" value="">
+                        <select id="dilute-water-unit">
+                            <option value="jin">斤</option>
+                            <option value="kg">公斤</option>
+                            <option value="L">升</option>
+                        </select>
+                    </div>
+                    <div class="quick-btns">
+                        <button class="quick-btn dilute-quick" data-water="30">30斤</button>
+                        <button class="quick-btn dilute-quick" data-water="40">40斤</button>
+                        <button class="quick-btn dilute-quick" data-water="100">100斤</button>
+                        <button class="quick-btn dilute-quick" data-water="200">200斤</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="decimal-control">
+                结果保留小数：
+                <select id="dilute-decimal">
+                    <option value="0">0位</option>
+                    <option value="1">1位</option>
+                    <option value="2" selected>2位</option>
+                    <option value="3">3位</option>
+                    <option value="4">4位</option>
+                </select>
+            </div>
+
+            <div class="result-box">
+                <div class="result-title">用药量</div>
+                <div class="result-list" id="dilute-result">
+                    <div class="result-item"><span class="name">毫升 (ml)</span><span class="val" id="dilute-ml">--</span></div>
+                    <div class="result-item"><span class="name">克 (g)</span><span class="val" id="dilute-g">--</span></div>
+                    <div class="result-item"><span class="name">升 (L)</span><span class="val" id="dilute-L">--</span></div>
+                    <div class="result-item"><span class="name">千克 (kg)</span><span class="val" id="dilute-kg">--</span></div>
+                </div>
+                <p style="font-size:11px;color:#999;margin-top:6px;">* ml与g为近似换算，实际以产品标签为准</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能四：面积用量计算 -->
+    <div class="tab-panel" id="tab-area">
+        <div class="card">
+            <h3>面积用量计算</h3>
+            <p class="desc">根据每亩推荐用量和种植面积，计算总用药量</p>
+            <div class="formula">总用药量 = 每亩用药量 × 面积(亩数)</div>
+
+            <div class="two-col">
+                <div class="form-group">
+                    <label>每亩推荐用药量</label>
+                    <div class="input-row">
+                        <input type="number" id="area-dose" placeholder="例如：50" value="">
+                        <select id="area-dose-unit">
+                            <option value="ml">ml/亩</option>
+                            <option value="g">g/亩</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>种植面积</label>
+                    <div class="input-row">
+                        <input type="number" id="area-size" placeholder="例如：10" value="">
+                        <select id="area-unit">
+                            <option value="mu">亩</option>
+                            <option value="m2">平方米</option>
+                            <option value="ha">公顷</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>每亩用水量（可选）</label>
+                <div class="input-row">
+                    <input type="number" id="area-water-per-mu" placeholder="例如：40" value="">
+                    <select id="area-water-unit">
+                        <option value="jin">斤/亩</option>
+                        <option value="kg">公斤/亩</option>
+                        <option value="L">升/亩</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="decimal-control">
+                结果保留小数：
+                <select id="area-decimal">
+                    <option value="0">0位</option>
+                    <option value="1">1位</option>
+                    <option value="2" selected>2位</option>
+                    <option value="3">3位</option>
+                    <option value="4">4位</option>
+                </select>
+            </div>
+
+            <div class="result-box">
+                <div class="result-title">计算结果</div>
+                <div class="result-list">
+                    <div class="result-item"><span class="name">折合面积</span><span class="val" id="area-converted">-- 亩</span></div>
+                    <div class="result-item"><span class="name">总用药量</span><span class="val" id="area-total-dose">--</span></div>
+                    <div class="result-item" id="area-water-row" style="display:none;"><span class="name">总用水量</span><span class="val" id="area-total-water">--</span></div>
+                </div>
+                <div id="bucket-reference" style="margin-top:8px;font-size:12px;color:#666;display:none;">
+                    参考：按40斤/桶约需 <strong id="bucket-count">--</strong> 桶水
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能五：单位换算 -->
+    <div class="tab-panel" id="tab-unit">
+        <div class="card">
+            <h3>常用单位换算</h3>
+            <p class="desc">输入任意数值，实时显示其他单位换算结果</p>
+
+            <div class="conversion-grid">
+                <div class="conversion-section">
+                    <h4>💧 水量换算</h4>
+                    <div class="conv-row">
+                        <input type="number" id="water-jin" placeholder="斤" oninput="convertWater('jin')">
+                        <span>斤</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="water-kg" placeholder="公斤" oninput="convertWater('kg')">
+                        <span>公斤</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="water-L" placeholder="升" oninput="convertWater('L')">
+                        <span>升</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="water-ml" placeholder="毫升" oninput="convertWater('ml')">
+                        <span>毫升</span>
+                    </div>
+                    <p style="font-size:11px;color:#999;margin-top:4px;">* 按水的密度近似计算，1升水≈1公斤≈2斤</p>
+                </div>
+
+                <div class="conversion-section">
+                    <h4>🧪 药量换算</h4>
+                    <div class="conv-row">
+                        <input type="number" id="dose-ml" placeholder="毫升" oninput="convertDose('ml')">
+                        <span>ml</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="dose-L" placeholder="升" oninput="convertDose('L')">
+                        <span>L</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="dose-g" placeholder="克" oninput="convertDose('g')">
+                        <span>g</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="dose-kg" placeholder="千克" oninput="convertDose('kg')">
+                        <span>kg</span>
+                    </div>
+                    <p style="font-size:11px;color:#999;margin-top:4px;">* ml与g仅水剂近似，粉剂以实际为准</p>
+                </div>
+
+                <div class="conversion-section">
+                    <h4>📐 面积换算</h4>
+                    <div class="conv-row">
+                        <input type="number" id="area-mu" placeholder="亩" oninput="convertArea('mu')">
+                        <span>亩</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="area-m2" placeholder="平方米" oninput="convertArea('m2')">
+                        <span>㎡</span>
+                    </div>
+                    <div class="conv-row">
+                        <input type="number" id="area-ha" placeholder="公顷" oninput="convertArea('ha')">
+                        <span>公顷</span>
+                    </div>
+                    <p style="font-size:11px;color:#999;margin-top:4px;">* 1亩≈666.67㎡，1公顷=15亩</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能六：历史记录 -->
+    <div class="tab-panel" id="tab-history">
+        <div class="card">
+            <h3>历史记录</h3>
+            <p class="desc">自动保存最近20条计算记录，本地存储不联网</p>
+
+            <div style="text-align:right;margin-bottom:10px;">
+                <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">清空全部</button>
+            </div>
+
+            <div id="history-list"></div>
+        </div>
+    </div>
+
+    <!-- 底部安全提示 -->
+    <div class="safety-footer">
+        <h4>⚠️ 安全使用须知</h4>
+        <ul>
+            <li>本工具仅供参考，实际用量以农药/肥料产品标签说明书为准</li>
+            <li>严禁超范围、超剂量使用农药，严格执行安全间隔期规定</li>
+            <li>施药时做好个人防护，穿戴防护服、口罩、手套，避免接触口鼻皮肤</li>
+            <li>不同作物、不同生育期、不同剂型用量可能存在差异</li>
+            <li>注意轮换用药，延缓抗药性产生，避免药害发生</li>
+            <li>不确定时请咨询当地农技推广人员或农药经销商</li>
+            <li>成分查询信息仅作科普参考，不构成使用建议</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // ===================== 全局变量 =====================
+    const INGREDIENTS = [
+        // 杀虫剂
+        {name:"阿维菌素", alias:"爱福丁、害极灭", category:"杀虫剂", action:"胃毒、触杀作用，干扰害虫神经生理活动", target:"菜青虫、小菜蛾、红蜘蛛、蚜虫、潜叶蛾等", formulation:"乳油、可湿性粉剂、悬浮剂", note:"对蜜蜂、鱼虾高毒，避开花期使用；不能与碱性农药混用", safety:"高毒类，严格按剂量使用，安全间隔期7-14天"},
+        {name:"吡虫啉", alias:"蚜虱净、一遍净", category:"杀虫剂", action:"内吸、触杀、胃毒，作用于昆虫烟酸乙酰胆碱酯酶受体", target:"蚜虫、飞虱、粉虱、叶蝉、蓟马等刺吸式口器害虫", formulation:"可湿性粉剂、悬浮剂、水分散粒剂", note:"对蜜蜂有毒，花期禁用；不宜在强阳光下使用", safety:"低毒，安全间隔期7-10天"},
+        {name:"啶虫脒", alias:"吡虫清、莫比朗", category:"杀虫剂", action:"触杀、胃毒、内吸活性，杀虫谱广", target:"蚜虫、粉虱、木虱、蓟马等", formulation:"乳油、可湿性粉剂、水分散粒剂", note:"对桑蚕有毒；不能与强碱性农药混用", safety:"中等毒，安全间隔期7天"},
+        {name:"噻虫嗪", alias:"阿克泰、锐胜", category:"杀虫剂", action:"内吸性强，触杀胃毒，可用于叶面喷雾和种子处理", target:"蚜虫、飞虱、粉虱、蓟马、地下害虫等", formulation:"水分散粒剂、悬浮种衣剂", note:"对蜜蜂高毒，花期禁用；对水生生物有害", safety:"低毒，安全间隔期14天"},
+        {name:"高效氯氟氰菊酯", alias:"功夫菊酯、三氟氯氰菊酯", category:"杀虫剂", action:"触杀、胃毒，杀虫谱广，作用速度快", target:"菜青虫、小菜蛾、蚜虫、蓟马、地下害虫等", formulation:"乳油、微囊悬浮剂", note:"对蜜蜂、鱼虾、家蚕高毒；不能与碱性农药混用", safety:"中等毒，安全间隔期7天"},
+        {name:"氯虫苯甲酰胺", alias:"康宽、普尊", category:"杀虫剂", action:"胃毒为主，激活鱼尼丁受体，导致害虫肌肉麻痹", target:"小菜蛾、菜青虫、稻纵卷叶螟、玉米螟等鳞翅目害虫", formulation:"悬浮剂、水分散粒剂", note:"对蜜蜂低毒，对鱼虾高毒；耐雨水冲刷", safety:"微毒，安全间隔期1-3天"},
+        {name:"甲维盐", alias:"甲氨基阿维菌素苯甲酸盐", category:"杀虫剂", action:"胃毒、触杀，增强神经递质作用，导致害虫麻痹死亡", target:"小菜蛾、菜青虫、甜菜夜蛾、稻纵卷叶螟等", formulation:"乳油、水分散粒剂、可湿性粉剂", note:"对蜜蜂、鱼虾高毒；不能与碱性农药混用", safety:"中等毒，安全间隔期5-7天"},
+        {name:"噻嗪酮", alias:"扑虱灵、优乐得", category:"杀虫剂", action:"抑制几丁质合成，干扰昆虫蜕皮生长", target:"飞虱、叶蝉、粉虱、介壳虫等", formulation:"可湿性粉剂、悬浮剂", note:"对白菜、萝卜敏感，易产生药害；不能直接杀死成虫", safety:"低毒，安全间隔期14天"},
+        {name:"毒死蜱", alias:"乐斯本、氯吡硫磷", category:"杀虫剂", action:"触杀、胃毒、熏蒸，有机磷类杀虫剂", target:"蚜虫、红蜘蛛、地下害虫、稻飞虱等", formulation:"乳油、颗粒剂", note:"对蜜蜂、鱼虾高毒；蔬菜上禁用或限用；不能与碱性农药混用", safety:"中等毒，安全间隔期7-21天"},
+        {name:"溴氰菊酯", alias:"敌杀死、凯素灵", category:"杀虫剂", action:"触杀、胃毒，菊酯类中杀虫活性最高", target:"菜青虫、蚜虫、食心虫、潜叶蛾等", formulation:"乳油、可湿性粉剂", note:"对蜜蜂、鱼虾、家蚕剧毒；不能与碱性农药混用", safety:"中等毒，安全间隔期5-7天"},
+        
+        // 杀螨剂
+        {name:"哒螨灵", alias:"扫螨净、速螨酮", category:"杀螨剂", action:"触杀，对成螨、若螨、卵均有效", target:"红蜘蛛、锈蜘蛛、瘿螨等", formulation:"可湿性粉剂、乳油", note:"对蜜蜂、鱼虾高毒；不能与碱性农药混用", safety:"中等毒，安全间隔期15天"},
+        {name:"螺螨酯", alias:"螨危、季酮螨酯", category:"杀螨剂", action:"抑制螨的脂肪合成，阻断能量代谢", target:"红蜘蛛、黄蜘蛛等各种害螨", formulation:"悬浮剂", note:"持效期长；对成螨效果差，对卵效果好", safety:"低毒，安全间隔期7天"},
+        {name:"乙螨唑", alias:"来福禄", category:"杀螨剂", action:"抑制几丁质形成，对螨卵和幼螨特效", target:"红蜘蛛、锈壁虱等", formulation:"悬浮剂", note:"对成螨无效，杀卵杀幼螨；持效期长", safety:"低毒，安全间隔期7天"},
+        
+        // 杀菌剂
+        {name:"多菌灵", alias:"苯并咪唑44号", category:"杀菌剂", action:"内吸性杀菌剂，干扰菌的有丝分裂", target:"白粉病、炭疽病、枯萎病、纹枯病、赤霉病等", formulation:"可湿性粉剂、悬浮剂", note:"不能与铜制剂混用；容易产生抗药性", safety:"低毒，安全间隔期7-15天"},
+        {name:"代森锰锌", alias:"大生、喷克", category:"杀菌剂", action:"保护性杀菌剂，抑制菌体内丙酮酸的氧化", target:"霜霉病、炭疽病、早疫病、叶斑病等", formulation:"可湿性粉剂、水分散粒剂", note:"不能与铜制剂、碱性农药混用；对皮肤有刺激", safety:"低毒，安全间隔期15天"},
+        {name:"嘧菌酯", alias:"阿米西达、安灭达", category:"杀菌剂", action:"线粒体呼吸抑制剂，保护治疗铲除三重作用", target:"白粉病、霜霉病、炭疽病、叶斑病等", formulation:"悬浮剂、水分散粒剂", note:"不能与乳油类农药混用；某些苹果品种敏感", safety:"低毒，安全间隔期3-7天"},
+        {name:"苯醚甲环唑", alias:"世高、敌萎丹", category:"杀菌剂", action:"三唑类，抑制麦角甾醇生物合成", target:"白粉病、炭疽病、黑星病、叶斑病、疮痂病等", formulation:"水分散粒剂、乳油", note:"内吸性强；不能与碱性农药混用", safety:"低毒，安全间隔期7-14天"},
+        {name:"戊唑醇", alias:"立克秀、富力库", category:"杀菌剂", action:"三唑类，保护治疗铲除作用", target:"白粉病、锈病、黑星病、纹枯病、赤霉病等", formulation:"悬浮剂、可湿性粉剂", note:"抑制生长作用较强，严格控制用量", safety:"低毒，安全间隔期21天"},
+        {name:"三环唑", alias:"克瘟唑、比艳", category:"杀菌剂", action:"内吸性强，抑制黑色素生物合成", target:"水稻稻瘟病", formulation:"可湿性粉剂、悬浮剂", note:"对鱼类有毒；专门防治稻瘟病，对其他病害效果差", safety:"中等毒，安全间隔期21天"},
+        {name:"稻瘟灵", alias:"富士一号", category:"杀菌剂", action:"内吸性，抑制脂质生物合成", target:"水稻稻瘟病、苗瘟、叶瘟、穗颈瘟", formulation:"乳油、可湿性粉剂", note:"不能与强碱性农药混用；对鱼类有毒", safety:"低毒，安全间隔期14天"},
+        {name:"甲基硫菌灵", alias:"甲基托布津", category:"杀菌剂", action:"内吸性，在植物体内转化为多菌灵起作用", target:"白粉病、炭疽病、枯萎病、纹枯病等", formulation:"可湿性粉剂、悬浮剂", note:"不能与铜制剂、碱性农药混用", safety:"低毒，安全间隔期7-14天"},
+        {name:"百菌清", alias:"达科宁、克劳优", category:"杀菌剂", action:"保护性杀菌剂，与真菌细胞中的酶结合", target:"霜霉病、炭疽病、白粉病、叶斑病等", formulation:"可湿性粉剂、悬浮剂", note:"没有内吸治疗作用；对梨、柿、桃易产生药害", safety:"低毒，安全间隔期7天"},
+        
+        // 除草剂
+        {name:"草甘膦", alias:"农达、镇草宁", category:"除草剂", action:"内吸传导型灭生性除草剂，抑制EPSPS合成酶", target:"一年生及多年生杂草", formulation:"水剂、可溶性粉剂", note:"灭生性除草剂，避免喷到作物上；遇土钝化", safety:"低毒，安全间隔期7-10天"},
+        {name:"草铵膦", alias:"保试达、百速顿", category:"除草剂", action:"触杀型灭生性除草剂，抑制谷氨酰胺合成酶", target:"一年生及多年生杂草", formulation:"水剂", note:"灭生性除草剂；内吸性弱，不烂根；对牛筋草效果好", safety:"低毒，安全间隔期7天"},
+        {name:"乙草胺", alias:"禾耐斯", category:"除草剂", action:"芽前封闭除草剂，抑制蛋白质合成", target:"一年生禾本科杂草及部分阔叶杂草", formulation:"乳油、微乳剂", note:"只能作土壤封闭处理；黄瓜、菠菜、韭菜敏感", safety:"低毒，播后苗前使用"},
+        {name:"莠去津", alias:"阿特拉津", category:"除草剂", action:"内吸性苗前苗后除草剂，抑制光合作用", target:"一年生禾本科和阔叶杂草", formulation:"可湿性粉剂、悬浮剂", note:"残效期长，后茬敏感作物易受药害；对地下水有影响", safety:"低毒，安全间隔期30天"},
+        {name:"烟嘧磺隆", alias:"玉农乐", category:"除草剂", action:"内吸性，抑制乙酰乳酸合成酶", target:"玉米田一年生和多年生杂草", formulation:"可分散油悬浮剂", note:"甜玉米、糯玉米敏感；不能与有机磷农药混用", safety:"低毒，安全间隔期30天"},
+        {name:"二甲四氯", alias:"2甲4氯", category:"除草剂", action:"激素型除草剂，破坏植物生长发育", target:"阔叶杂草、莎草科杂草", formulation:"水剂、钠盐", note:"禾本科作物敏感时期禁用；不能与酸性农药混用", safety:"低毒，安全间隔期15-30天"},
+        {name:"氯吡脲", alias:"吡效隆、KT-30", category:"植物生长调节剂", action:"细胞分裂素类，促进细胞分裂分化", target:"用于瓜类、葡萄、猕猴桃等膨果", formulation:"可溶液剂", note:"严格按浓度使用，浓度过高易产生畸形果、品质下降", safety:"低毒，按推荐浓度使用"},
+        
+        // 植物生长调节剂
+        {name:"芸苔素内酯", alias:"芸苔素、油菜素内酯", category:"植物生长调节剂", action:"甾醇类植物激素，促进生长、提高抗逆性", target:"各类作物，促生长、解药害、增产量", formulation:"水剂、乳油、可湿性粉剂", note:"严格控制浓度，过高抑制生长；与肥料混用效果更佳", safety:"微毒，按说明使用"},
+        {name:"赤霉酸", alias:"920、赤霉素", category:"植物生长调节剂", action:"促进细胞伸长生长，打破休眠", target:"促进种子发芽、茎叶伸长、果实膨大", formulation:"结晶粉、乳油", note:"浓度过高易造成徒长、倒伏；不能与碱性物质混用", safety:"低毒，按推荐浓度使用"},
+        
+        // 肥料
+        {name:"磷酸二氢钾", alias:"磷钾源库、MKP", category:"叶面肥", action:"补充磷钾元素，促进花芽分化、膨果着色、抗逆", target:"各类作物均可使用，花期、膨果期效果佳", formulation:"晶体、粉剂", note:"高纯度磷钾肥；不能与含钙农药肥料混用", safety:"无毒，按说明使用"},
+        {name:"尿素", alias:"碳酰胺", category:"肥料", action:"补充氮元素，促进茎叶生长", target:"各类作物，作基肥、追肥、叶面肥", formulation:"颗粒", note:"含缩二脲，过量烧根；叶面喷施浓度0.2-0.5%", safety:"无毒，合理施用"},
+        {name:"硫酸钾", alias:"", category:"肥料", action:"补充钾元素，促进果实发育、提高品质", target:"各类作物，尤其适合忌氯作物", formulation:"颗粒、晶体", note:"长期施用易造成土壤酸化；注意配合钙肥", safety:"无毒，合理施用"},
+        {name:"复合肥", alias:"复混肥", category:"肥料", action:"同时提供氮磷钾多种营养元素", target:"各类作物，作基肥、追肥", formulation:"颗粒", note:"养分比例固定，根据作物需求选择；注意施用深度", safety:"无毒，合理施用"},
+        {name:"硼肥", alias:"硼砂、硼酸", category:"肥料", action:"补充硼元素，促进花粉萌发、坐果", target:"油菜、棉花、果树、蔬菜等开花作物", formulation:"粉剂、水剂", note:"硼过量有毒害；严格控制用量", safety:"适量无毒，过量有害"},
+        {name:"锌肥", alias:"硫酸锌", category:"肥料", action:"补充锌元素，防治小叶病、促进生长", target:"玉米、水稻、果树等", formulation:"粉剂、晶体", note:"不能与磷肥混用；叶面喷施浓度0.1-0.2%", safety:"适量无毒"},
+        {name:"钙肥", alias:"氯化钙、硝酸钙、螯合钙", category:"肥料", action:"补充钙元素，防治脐腐病、裂果，提高品质", target:"番茄、辣椒、葡萄、苹果等", formulation:"粉剂、水剂", note:"钙在植物体内移动性差，叶面喷施为主", safety:"无毒，合理施用"}
+    ];
+
+    const HISTORY_KEY = 'pesticide_calc_history';
+    const MAX_HISTORY = 20;
+    let currentMode = 'single';
+    let currentCategory = 'all';
+
+    // ===================== Tab切换 =====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tab = this.dataset.tab;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('tab-' + tab).classList.add('active');
+            
+            if (tab === 'history') {
+                renderHistory();
+            }
+        });
+    });
+
+    // ===================== 功能一：用量换算 =====================
+    
+    // 模式切换
+    document.querySelectorAll('.mode-switch button').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.mode-switch button').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentMode = this.dataset.mode;
+            
+            if (currentMode === 'single') {
+                document.getElementById('single-mode').style.display = 'block';
+                document.getElementById('set-mode').style.display = 'none';
+            } else {
+                document.getElementById('single-mode').style.display = 'none';
+                document.getElementById('set-mode').style.display = 'block';
+            }
+        });
+    });
+
+    // 水量单位转斤
+    function waterToJin(value, unit) {
+        switch(unit) {
+            case 'jin': return value;
+            case 'kg': return value * 2;
+            case 'L': return value * 2;
+            default: return value;
+        }
+    }
+
+    // 药量单位转ml
+    function doseToMl(value, unit) {
+        switch(unit) {
+            case 'ml': return value;
+            case 'L': return value * 1000;
+            case 'g': return value; // 近似
+            case 'kg': return value * 1000; // 近似
+            default: return value;
+        }
+    }
+
+    // ml转目标单位
+    function mlToUnit(ml, unit) {
+        switch(unit) {
+            case 'ml': return ml;
+            case 'L': return ml / 1000;
+            case 'g': return ml; // 近似
+            case 'kg': return ml / 1000; // 近似
+            default: return ml;
+        }
+    }
+
+    // 单剂计算
+    function calcSingle() {
+        const dose = parseFloat(document.getElementById('single-dose').value);
+        const doseUnit = document.getElementById('single-dose-unit').value;
+        const water = parseFloat(document.getElementById('single-water').value);
+        const waterUnit = document.getElementById('single-water-unit').value;
+        const target = parseFloat(document.getElementById('single-target').value);
+        const targetUnit = document.getElementById('single-target-unit').value;
+        const decimal = parseInt(document.getElementById('single-decimal').value);
+
+        if (isNaN(dose) || isNaN(water) || isNaN(target) || dose <= 0 || water <= 0 || target <= 0) {
+            document.getElementById('single-result').style.display = 'none';
+            return;
+        }
+
+        const waterJin = waterToJin(water, waterUnit);
+        const targetJin = waterToJin(target, targetUnit);
+        const doseMl = doseToMl(dose, doseUnit);
+        
+        const resultMl = doseMl * targetJin / waterJin;
+        const result = mlToUnit(resultMl, doseUnit);
+
+        document.getElementById('single-result-val').textContent = result.toFixed(decimal);
+        document.getElementById('single-result-unit').textContent = doseUnit;
+        document.getElementById('single-result').style.display = 'block';
+
+        // 保存历史
+        addHistory('用量换算', 
+            `${dose}${doseUnit} 兑水 ${water}${waterUnit === 'jin' ? '斤' : waterUnit === 'kg' ? '公斤' : '升'}，目标 ${target}${targetUnit === 'jin' ? '斤' : targetUnit === 'kg' ? '公斤' : '升'}`,
+            `用药量：${result.toFixed(decimal)} ${doseUnit}`
+        );
+    }
+
+    // 绑定单剂输入事件
+    ['single-dose', 'single-water', 'single-target', 'single-dose-unit', 'single-water-unit', 'single-target-unit', 'single-decimal'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcSingle);
+        document.getElementById(id).addEventListener('change', calcSingle);
+    });
+
+    // 快捷水量按钮
+    document.querySelectorAll('.quick-btn:not(.set-quick):not(.dilute-quick)').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('single-target').value = this.dataset.water;
+            document.getElementById('single-target-unit').value = 'jin';
+            calcSingle();
+        });
+    });
+
+    // 套装行操作
+    function addSetRow() {
+        const container = document.getElementById('set-rows');
+        const rows = container.querySelectorAll('.set-row');
+        const index = rows.length + 1;
+        
+        const row = document.createElement('div');
+        row.className = 'set-row';
+        row.innerHTML = `
+            <input type="text" class="set-name" placeholder="名称" value="第${index}瓶">
+            <input type="number" class="set-amount" placeholder="规格">
+            <select class="set-unit">
+                <option value="ml">ml</option>
+                <option value="L">L</option>
+                <option value="g">g</option>
+                <option value="kg">kg</option>
+            </select>
+            <button class="del-row-btn" onclick="removeSetRow(this)">删除</button>
+        `;
+        container.appendChild(row);
+        
+        // 绑定事件
+        row.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', calcSet);
+            el.addEventListener('change', calcSet);
+        });
+    }
+
+    function removeSetRow(btn) {
+        const row = btn.parentElement;
+        const container = document.getElementById('set-rows');
+        if (container.querySelectorAll('.set-row').length > 1) {
+            row.remove();
+            calcSet();
+        }
+    }
+
+    // 套装计算
+    function calcSet() {
+        const water = parseFloat(document.getElementById('set-water').value);
+        const waterUnit = document.getElementById('set-water-unit').value;
+        const target = parseFloat(document.getElementById('set-target').value);
+        const targetUnit = document.getElementById('set-target-unit').value;
+        const decimal = parseInt(document.getElementById('set-decimal').value);
+
+        const rows = document.querySelectorAll('.set-row');
+        let hasValid = false;
+        const results = [];
+
+        if (isNaN(water) || isNaN(target) || water <= 0 || target <= 0) {
+            document.getElementById('set-result').style.display = 'none';
+            return;
+        }
+
+        const waterJin = waterToJin(water, waterUnit);
+        const targetJin = waterToJin(target, targetUnit);
+
+        rows.forEach(row => {
+            const name = row.querySelector('.set-name').value || '未命名';
+            const amount = parseFloat(row.querySelector('.set-amount').value);
+            const unit = row.querySelector('.set-unit').value;
+            
+            if (!isNaN(amount) && amount > 0) {
+                hasValid = true;
+                const amountMl = doseToMl(amount, unit);
+                const resultMl = amountMl * targetJin / waterJin;
+                const result = mlToUnit(resultMl, unit);
+                results.push({ name, value: result.toFixed(decimal), unit });
+            }
+        });
+
+        if (hasValid) {
+            const html = results.map(r => 
+                `<div class="result-item"><span class="name">${r.name}</span><span class="val">${r.value} ${r.unit}</span></div>`
+            ).join('');
+            document.getElementById('set-result-list').innerHTML = html;
+            document.getElementById('set-result').style.display = 'block';
+
+            // 保存历史
+            const summary = results.map(r => `${r.name}:${r.value}${r.unit}`).join('，');
+            addHistory('套装换算',
+                `兑水 ${water}${waterUnit === 'jin' ? '斤' : waterUnit === 'kg' ? '公斤' : '升'}，目标 ${target}${targetUnit === 'jin' ? '斤' : targetUnit === 'kg' ? '公斤' : '升'}`,
+                summary
+            );
+        } else {
+            document.getElementById('set-result').style.display = 'none';
+        }
+    }
+
+    // 绑定套装事件
+    ['set-water', 'set-target', 'set-water-unit', 'set-target-unit', 'set-decimal'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcSet);
+        document.getElementById(id).addEventListener('change', calcSet);
+    });
+
+    document.querySelectorAll('.set-row input, .set-row select').forEach(el => {
+        el.addEventListener('input', calcSet);
+        el.addEventListener('change', calcSet);
+    });
+
+    // 套装快捷水量
+    document.querySelectorAll('.set-quick').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('set-target').value = this.dataset.water;
+            document.getElementById('set-target-unit').value = 'jin';
+            calcSet();
+        });
+    });
+
+    // 复制结果
+    function copyCalcResult() {
+        let text = '';
+        if (currentMode === 'single') {
+            const val = document.getElementById('single-result-val').textContent;
+            const unit = document.getElementById('single-result-unit').textContent;
+            text = `用药量：${val} ${unit}`;
+        } else {
+            const items = document.querySelectorAll('#set-result-list .result-item');
+            const lines = [];
+            items.forEach(item => {
+                lines.push(item.querySelector('.name').textContent + '：' + item.querySelector('.val').textContent);
+            });
+            text = lines.join('\n');
+        }
+        
+        if (text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('结果已复制到剪贴板');
+            }).catch(() => {
+                // 降级方案
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                alert('结果已复制到剪贴板');
+            });
+        }
+    }
+
+    // 重置
+    function resetCalc() {
+        if (currentMode === 'single') {
+            document.getElementById('single-dose').value = '';
+            document.getElementById('single-water').value = '';
+            document.getElementById('single-target').value = '';
+            document.getElementById('single-result').style.display = 'none';
+        } else {
+            document.getElementById('set-water').value = '';
+            document.getElementById('set-target').value = '';
+            document.querySelectorAll('.set-amount').forEach(input => input.value = '');
+            document.getElementById('set-result').style.display = 'none';
+        }
+    }
+
+    // ===================== 功能二：成分查询 =====================
+    
+    function renderIngredients() {
+        const keyword = document.getElementById('ingredient-search').value.trim().toLowerCase();
+        const container = document.getElementById('ingredient-results');
+        
+        let filtered = INGREDIENTS;
+        
+        // 类别筛选
+        if (currentCategory !== 'all') {
+            filtered = filtered.filter(item => item.category === currentCategory);
+        }
+        
+        // 关键词筛选
+        if (keyword) {
+            filtered = filtered.filter(item => 
+                item.name.toLowerCase().includes(keyword) ||
+                item.alias.toLowerCase().includes(keyword)
+            );
+        }
+        
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="no-result">未找到匹配的成分，请核对名称或尝试其他关键词</div>';
+            return;
+        }
+        
+        container.innerHTML = filtered.map(item => `
+            <div class="ingredient-card">
+                <h4>${item.name}</h4>
+                <div class="alias">别名：${item.alias || '无'}</div>
+                <div class="info-row"><span>类别：</span>${item.category}</div>
+                <div class="info-row"><span>常见作用：</span>${item.action}</div>
+                <div class="info-row"><span>防治对象：</span>${item.target}</div>
+                <div class="info-row"><span>常见剂型：</span>${item.formulation}</div>
+                <div class="info-row"><span>注意事项：</span>${item.note}</div>
+                <div class="warning">⚠️ ${item.safety}</div>
+                <div style="font-size:11px;color:#999;margin-top:6px;">备注：以上信息仅供参考，请以产品标签为准</div>
+            </div>
+        `).join('');
+    }
+
+    document.getElementById('ingredient-search').addEventListener('input', renderIngredients);
+
+    document.querySelectorAll('.category-tag').forEach(tag => {
+        tag.addEventListener('click', function() {
+            document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.dataset.cat;
+            renderIngredients();
+        });
+    });
+
+    // 初始化渲染
+    renderIngredients();
+
+    // ===================== 功能三：稀释倍数计算 =====================
+    
+    function calcDilute() {
+        const times = parseFloat(document.getElementById('dilute-times').value);
+        const water = parseFloat(document.getElementById('dilute-water').value);
+        const waterUnit = document.getElementById('dilute-water-unit').value;
+        const decimal = parseInt(document.getElementById('dilute-decimal').value);
+
+        if (isNaN(times) || isNaN(water) || times <= 0 || water <= 0) {
+            document.getElementById('dilute-ml').textContent = '--';
+            document.getElementById('dilute-g').textContent = '--';
+            document.getElementById('dilute-L').textContent = '--';
+            document.getElementById('dilute-kg').textContent = '--';
+            return;
+        }
+
+        // 转成毫升
+        let waterMl;
+        switch(waterUnit) {
+            case 'jin': waterMl = water * 500; break;
+            case 'kg': waterMl = water * 1000; break;
+            case 'L': waterMl = water * 1000; break;
+            default: waterMl = water;
+        }
+
+        const doseMl = waterMl / times;
+
+        document.getElementById('dilute-ml').textContent = doseMl.toFixed(decimal) + ' ml';
+        document.getElementById('dilute-g').textContent = doseMl.toFixed(decimal) + ' g';
+        document.getElementById('dilute-L').textContent = (doseMl / 1000).toFixed(decimal) + ' L';
+        document.getElementById('dilute-kg').textContent = (doseMl / 1000).toFixed(decimal) + ' kg';
+
+        // 保存历史
+        addHistory('稀释倍数',
+            `${water}${waterUnit === 'jin' ? '斤' : waterUnit === 'kg' ? '公斤' : '升'}水，稀释${times}倍`,
+            `用药量：${doseMl.toFixed(decimal)} ml`
+        );
+    }
+
+    ['dilute-times', 'dilute-water', 'dilute-water-unit', 'dilute-decimal'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcDilute);
+        document.getElementById(id).addEventListener('change', calcDilute);
+    });
+
+    document.querySelectorAll('.dilute-quick').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('dilute-water').value = this.dataset.water;
+            document.getElementById('dilute-water-unit').value = 'jin';
+            calcDilute();
+        });
+    });
+
+    // ===================== 功能四：面积用量计算 =====================
+    
+    function calcArea() {
+        const dose = parseFloat(document.getElementById('area-dose').value);
+        const doseUnit = document.getElementById('area-dose-unit').value;
+        const size = parseFloat(document.getElementById('area-size').value);
+        const sizeUnit = document.getElementById('area-unit').value;
+        const waterPer = parseFloat(document.getElementById('area-water-per-mu').value);
+        const waterUnit = document.getElementById('area-water-unit').value;
+        const decimal = parseInt(document.getElementById('area-decimal').value);
+
+        // 面积转亩
+        let mu;
+        switch(sizeUnit) {
+            case 'mu': mu = size; break;
+            case 'm2': mu = size / 666.67; break;
+            case 'ha': mu = size * 15; break;
+            default: mu = size;
+        }
+
+        if (isNaN(dose) || isNaN(size) || dose <= 0 || size <= 0) {
+            document.getElementById('area-converted').textContent = '-- 亩';
+            document.getElementById('area-total-dose').textContent = '--';
+            document.getElementById('area-water-row').style.display = 'none';
+            document.getElementById('bucket-reference').style.display = 'none';
+            return;
+        }
+
+        const totalDose = dose * mu;
+
+        document.getElementById('area-converted').textContent = mu.toFixed(2) + ' 亩';
+        document.getElementById('area-total-dose').textContent = totalDose.toFixed(decimal) + ' ' + doseUnit;
+
+        // 用水量
+        if (!isNaN(waterPer) && waterPer > 0) {
+            const totalWater = waterPer * mu;
+            document.getElementById('area-total-water').textContent = totalWater.toFixed(1) + ' ' + 
+                (waterUnit === 'jin' ? '斤' : waterUnit === 'kg' ? '公斤' : '升');
+            document.getElementById('area-water-row').style.display = 'flex';
+            
+            // 桶数参考（按40斤/桶）
+            let waterJin;
+            switch(waterUnit) {
+                case 'jin': waterJin = totalWater; break;
+                case 'kg': waterJin = totalWater * 2; break;
+                case 'L': waterJin = totalWater * 2; break;
+            }
+            document.getElementById('bucket-count').textContent = (waterJin / 40).toFixed(1);
+            document.getElementById('bucket-reference').style.display = 'block';
+        } else {
+            document.getElementById('area-water-row').style.display = 'none';
+            document.getElementById('bucket-reference').style.display = 'none';
+        }
+
+        // 保存历史
+        addHistory('面积用量',
+            `${dose}${doseUnit}/亩，面积${size}${sizeUnit === 'mu' ? '亩' : sizeUnit === 'm2' ? '㎡' : '公顷'}`,
+            `总用药量：${totalDose.toFixed(decimal)} ${doseUnit}，折合${mu.toFixed(2)}亩`
+        );
+    }
+
+    ['area-dose', 'area-dose-unit', 'area-size', 'area-unit', 'area-water-per-mu', 'area-water-unit', 'area-decimal'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcArea);
+        document.getElementById(id).addEventListener('change', calcArea);
+    });
+
+    // ===================== 功能五：单位换算 =====================
+    
+    let waterLock = false;
+    let doseLock = false;
+    let areaLock = false;
+
+    function convertWater(from) {
+        if (waterLock) return;
+        waterLock = true;
+        
+        const val = parseFloat(document.getElementById('water-' + from).value);
+        let jin = 0;
+        
+        if (!isNaN(val)) {
+            switch(from) {
+                case 'jin': jin = val; break;
+                case 'kg': jin = val * 2; break;
+                case 'L': jin = val * 2; break;
+                case 'ml': jin = val / 500; break;
+            }
+        }
+        
+        document.getElementById('water-jin').value = jin ? (jin).toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('water-kg').value = jin ? (jin / 2).toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('water-L').value = jin ? (jin / 2).toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('water-ml').value = jin ? (jin * 500).toFixed(2).replace(/\.?0+$/, '') : '';
+        
+        waterLock = false;
+    }
+
+    function convertDose(from) {
+        if (doseLock) return;
+        doseLock = true;
+        
+        const val = parseFloat(document.getElementById('dose-' + from).value);
+        let ml = 0;
+        
+        if (!isNaN(val)) {
+            switch(from) {
+                case 'ml': ml = val; break;
+                case 'L': ml = val * 1000; break;
+                case 'g': ml = val; break;
+                case 'kg': ml = val * 1000; break;
+            }
+        }
+        
+        document.getElementById('dose-ml').value = ml ? ml.toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('dose-L').value = ml ? (ml / 1000).toFixed(6).replace(/\.?0+$/, '') : '';
+        document.getElementById('dose-g').value = ml ? ml.toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('dose-kg').value = ml ? (ml / 1000).toFixed(6).replace(/\.?0+$/, '') : '';
+        
+        doseLock = false;
+    }
+
+    function convertArea(from) {
+        if (areaLock) return;
+        areaLock = true;
+        
+        const val = parseFloat(document.getElementById('area-' + from).value);
+        let mu = 0;
+        
+        if (!isNaN(val)) {
+            switch(from) {
+                case 'mu': mu = val; break;
+                case 'm2': mu = val / 666.67; break;
+                case 'ha': mu = val * 15; break;
+            }
+        }
+        
+        document.getElementById('area-mu').value = mu ? mu.toFixed(4).replace(/\.?0+$/, '') : '';
+        document.getElementById('area-m2').value = mu ? (mu * 666.67).toFixed(2).replace(/\.?0+$/, '') : '';
+        document.getElementById('area-ha').value = mu ? (mu / 15).toFixed(6).replace(/\.?0+$/, '') : '';
+        
+        areaLock = false;
+    }
+
+    // ===================== 功能六：历史记录 =====================
+    
+    function addHistory(type, input, result) {
+        let history = getHistory();
+        
+        // 去重：相同输入不重复记录
+        const last = history[0];
+        if (last && last.input === input) return;
+        
+        history.unshift({
+            time: new Date().toLocaleString('zh-CN'),
+            type,
+            input,
+            result
+        });
+        
+        if (history.length > MAX_HISTORY) {
+            history = history.slice(0, MAX_HISTORY);
+        }
+        
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    }
+
+    function getHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+        } catch(e) {
+            return [];
+        }
+    }
+
+    function renderHistory() {
+        const history = getHistory();
+        const container = document.getElementById('history-list');
+        
+        if (history.length === 0) {
+            container.innerHTML = '<div class="empty-history">暂无计算记录</div>';
+            return;
+        }
+        
+        container.innerHTML = history.map((item, index) => `
+            <div class="history-item">
+                <div class="history-header">
+                    <span class="history-type">${item.type}</span>
+                    <span class="history-time">${item.time}</span>
+                </div>
+                <div class="history-content">
+                    <div>输入：${item.input}</div>
+                    <div>结果：${item.result}</div>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-secondary" onclick="copyHistory(${index})">复制</button>
+                    <button class="btn-danger" onclick="deleteHistory(${index})">删除</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function copyHistory(index) {
+        const history = getHistory();
+        const item = history[index];
+        const text = `${item.type}\n输入：${item.input}\n结果：${item.result}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert('已复制到剪贴板');
+        }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            alert('已复制到剪贴板');
+        });
+    }
+
+    function deleteHistory(index) {
+        if (!confirm('确定删除这条记录吗？')) return;
+        const history = getHistory();
+        history.splice(index, 1);
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        renderHistory();
+    }
+
+    function clearAllHistory() {
+        if (!confirm('确定清空全部历史记录吗？')) return;
+        localStorage.removeItem(HISTORY_KEY);
+        renderHistory();
+    }
+
+    // ===================== 初始化 =====================
+    // 页面加载时渲染历史
+    document.addEventListener('DOMContentLoaded', function() {
+        renderHistory();
+    });
+
+</script>
+
+</body>
+</html>
