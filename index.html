@@ -2,13 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <title>农药肥料日常用量计算器</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
@@ -16,24 +21,26 @@
             background-color: #f5f7f4;
             color: #333;
             line-height: 1.6;
+            padding-bottom: env(safe-area-inset-bottom);
+            font-size: 14px;
         }
 
         /* 头部样式 */
         .header {
             background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
             color: white;
-            padding: 20px 15px;
+            padding: calc(16px + env(safe-area-inset-top)) 15px 18px;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 600;
             margin-bottom: 6px;
         }
 
         .header .subtitle {
-            font-size: 14px;
+            font-size: 13px;
             opacity: 0.9;
             margin-bottom: 12px;
         }
@@ -53,25 +60,35 @@
         .container {
             max-width: 960px;
             margin: 0 auto;
-            padding: 15px;
+            padding: 12px;
         }
 
-        /* Tab导航 */
+        /* Tab导航 - 支持横向滚动 */
         .tabs {
             display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-bottom: 15px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            margin-bottom: 12px;
             background: white;
             padding: 8px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .tab-btn {
-            flex: 1;
-            min-width: 80px;
-            padding: 10px 6px;
+            flex: 0 0 auto;
+            min-width: 68px;
+            padding: 10px 12px;
             border: none;
             background: transparent;
             color: #555;
@@ -79,6 +96,7 @@
             cursor: pointer;
             border-radius: 6px;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -87,7 +105,7 @@
             font-weight: 500;
         }
 
-        .tab-btn:hover:not(.active) {
+        .tab-btn:active:not(.active) {
             background: #e8f5e9;
             color: #2e7d32;
         }
@@ -105,15 +123,15 @@
         .card {
             background: white;
             border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 15px;
+            padding: 14px;
+            margin-bottom: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .card h3 {
             color: #2e7d32;
             font-size: 16px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             padding-bottom: 8px;
             border-bottom: 1px solid #e8f5e9;
         }
@@ -121,7 +139,7 @@
         .card .desc {
             font-size: 12px;
             color: #888;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .formula {
@@ -131,7 +149,8 @@
             font-size: 12px;
             color: #558b2f;
             margin-bottom: 12px;
-            font-family: monospace;
+            font-family: "SF Mono", Menlo, Monaco, Consolas, monospace;
+            word-break: break-all;
         }
 
         /* 表单组 */
@@ -155,12 +174,14 @@
 
         .input-row input {
             flex: 1;
-            padding: 9px 10px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
             transition: border-color 0.2s;
+            min-height: 44px;
+            width: 0;
         }
 
         .input-row input:focus {
@@ -168,13 +189,14 @@
         }
 
         .input-row select {
-            padding: 9px 8px;
+            padding: 10px 8px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 14px;
             background: white;
             outline: none;
-            min-width: 65px;
+            min-width: 60px;
+            min-height: 44px;
         }
 
         /* 快捷按钮 */
@@ -182,20 +204,21 @@
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 8px;
         }
 
         .quick-btn {
-            padding: 5px 10px;
+            padding: 7px 12px;
             background: #e8f5e9;
             color: #2e7d32;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             font-size: 12px;
             cursor: pointer;
+            min-height: 34px;
         }
 
-        .quick-btn:hover {
+        .quick-btn:active {
             background: #c8e6c9;
         }
 
@@ -208,12 +231,15 @@
         }
 
         .btn {
-            padding: 9px 16px;
+            padding: 10px 16px;
             border: none;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 14px;
             cursor: pointer;
             transition: background 0.2s;
+            min-height: 42px;
+            flex: 1;
+            min-width: 80px;
         }
 
         .btn-primary {
@@ -221,7 +247,7 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:active {
             background: #1b5e20;
         }
 
@@ -230,7 +256,7 @@
             color: #555;
         }
 
-        .btn-secondary:hover {
+        .btn-secondary:active {
             background: #e0e0e0;
         }
 
@@ -239,8 +265,15 @@
             color: #c62828;
         }
 
-        .btn-danger:hover {
+        .btn-danger:active {
             background: #ffcdd2;
+        }
+
+        .btn-sm {
+            min-height: 32px;
+            padding: 6px 12px;
+            font-size: 12px;
+            flex: none;
         }
 
         /* 结果区域 */
@@ -259,9 +292,10 @@
         }
 
         .result-value {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             color: #2e7d32;
+            word-break: break-all;
         }
 
         .result-value small {
@@ -277,7 +311,8 @@
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
+            align-items: center;
+            padding: 6px 0;
             border-bottom: 1px dashed #c5e1a5;
             font-size: 14px;
         }
@@ -303,13 +338,15 @@
             font-size: 12px;
             color: #666;
             margin-top: 8px;
+            flex-wrap: wrap;
         }
 
         .decimal-control select {
-            padding: 4px 6px;
+            padding: 5px 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 12px;
+            min-height: 30px;
         }
 
         /* 模式切换 */
@@ -321,12 +358,13 @@
 
         .mode-switch button {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ddd;
             background: white;
             border-radius: 6px;
             font-size: 13px;
             cursor: pointer;
+            min-height: 40px;
         }
 
         .mode-switch button.active {
@@ -344,41 +382,47 @@
         }
 
         .set-row input[type="text"] {
-            flex: 0 0 80px;
-            padding: 7px 8px;
+            flex: 0 0 75px;
+            padding: 9px 8px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 13px;
+            min-height: 40px;
         }
 
         .set-row input[type="number"] {
             flex: 1;
-            padding: 7px 8px;
+            padding: 9px 8px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 13px;
+            font-size: 14px;
+            min-height: 40px;
+            width: 0;
         }
 
         .set-row select {
-            padding: 7px 6px;
+            padding: 9px 6px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 12px;
+            min-height: 40px;
         }
 
         .del-row-btn {
-            padding: 7px 10px;
+            padding: 9px 10px;
             background: #ffebee;
             color: #c62828;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 12px;
+            min-height: 40px;
+            flex-shrink: 0;
         }
 
         .add-row-btn {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             background: #e8f5e9;
             color: #2e7d32;
             border: 1px dashed #a5d6a7;
@@ -386,6 +430,7 @@
             cursor: pointer;
             font-size: 13px;
             margin-top: 4px;
+            min-height: 40px;
         }
 
         /* 成分查询 */
@@ -397,11 +442,12 @@
 
         .search-bar input {
             flex: 1;
-            padding: 9px 12px;
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
             outline: none;
+            min-height: 44px;
         }
 
         .search-bar input:focus {
@@ -416,13 +462,14 @@
         }
 
         .category-tag {
-            padding: 4px 10px;
+            padding: 5px 12px;
             background: #f0f0f0;
             color: #666;
             border-radius: 20px;
             font-size: 12px;
             cursor: pointer;
             border: none;
+            min-height: 28px;
         }
 
         .category-tag.active {
@@ -453,12 +500,13 @@
         .ingredient-card .info-row {
             font-size: 13px;
             margin-bottom: 4px;
+            line-height: 1.5;
         }
 
         .ingredient-card .info-row span:first-child {
             color: #888;
-            display: inline-block;
-            min-width: 70px;
+            display: inline;
+            margin-right: 4px;
         }
 
         .ingredient-card .warning {
@@ -468,11 +516,12 @@
             border-radius: 4px;
             font-size: 12px;
             color: #f57f17;
+            line-height: 1.5;
         }
 
         .no-result {
             text-align: center;
-            padding: 30px;
+            padding: 30px 10px;
             color: #999;
             font-size: 14px;
         }
@@ -481,13 +530,7 @@
         .conversion-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 12px;
-        }
-
-        @media (min-width: 600px) {
-            .conversion-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+            gap: 16px;
         }
 
         .conversion-section h4 {
@@ -499,22 +542,25 @@
         .conv-row {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             margin-bottom: 6px;
         }
 
         .conv-row input {
             flex: 1;
-            padding: 7px 8px;
+            padding: 8px 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            font-size: 13px;
+            font-size: 14px;
+            min-height: 40px;
+            width: 0;
         }
 
         .conv-row span {
             font-size: 12px;
             color: #666;
             min-width: 35px;
+            flex-shrink: 0;
         }
 
         /* 历史记录 */
@@ -542,11 +588,14 @@
         .history-time {
             font-size: 11px;
             color: #aaa;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
 
         .history-content {
             font-size: 12px;
             color: #666;
+            word-break: break-all;
         }
 
         .history-actions {
@@ -556,11 +605,12 @@
         }
 
         .history-actions button {
-            padding: 3px 8px;
+            padding: 4px 10px;
             font-size: 11px;
             border: none;
             border-radius: 3px;
             cursor: pointer;
+            min-height: 26px;
         }
 
         .empty-history {
@@ -594,6 +644,7 @@
             padding: 3px 0;
             padding-left: 16px;
             position: relative;
+            line-height: 1.5;
         }
 
         .safety-footer li::before {
@@ -615,21 +666,106 @@
             display: block;
         }
 
-        /* 响应式 */
+        /* ============ 响应式断点 ============ */
+        
+        /* 小屏手机 */
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            .container {
+                padding: 10px 8px;
+            }
+            .card {
+                padding: 12px 10px;
+            }
+            .result-value {
+                font-size: 20px;
+            }
+            .tab-btn {
+                min-width: 60px;
+                padding: 9px 10px;
+                font-size: 12px;
+            }
+            .set-row input[type="text"] {
+                flex: 0 0 65px;
+                font-size: 12px;
+            }
+        }
+
+        /* 平板及以上 */
+        @media (min-width: 600px) {
+            .conversion-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+        }
+
+        /* 电脑端 */
         @media (min-width: 768px) {
             .header h1 {
-                font-size: 26px;
+                font-size: 24px;
             }
-
+            .header .subtitle {
+                font-size: 14px;
+            }
+            .container {
+                padding: 20px 15px;
+            }
+            .card {
+                padding: 18px;
+                margin-bottom: 16px;
+            }
+            .card h3 {
+                font-size: 17px;
+                margin-bottom: 10px;
+            }
             .two-col {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 gap: 15px;
             }
-
+            .tabs {
+                position: static;
+                flex-wrap: wrap;
+                overflow: visible;
+            }
             .tab-btn {
+                flex: 1;
                 font-size: 14px;
-                padding: 10px;
+                padding: 11px;
+            }
+            .result-value {
+                font-size: 26px;
+            }
+            .btn {
+                flex: none;
+                min-width: 100px;
+            }
+        }
+
+        /* 大屏桌面 */
+        @media (min-width: 1024px) {
+            .conversion-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+        }
+
+        /* 横屏优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .header {
+                padding: 10px 15px;
+            }
+            .header h1 {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+            .header .subtitle {
+                margin-bottom: 8px;
+            }
+            .disclaimer-top {
+                font-size: 11px;
+                padding: 8px 10px;
             }
         }
 
@@ -1147,6 +1283,8 @@
             if (tab === 'history') {
                 renderHistory();
             }
+            // 滚动到顶部
+            document.querySelector('.tabs').scrollLeft = 0;
         });
     });
 
@@ -1745,7 +1883,6 @@
     }
 
     // ===================== 初始化 =====================
-    // 页面加载时渲染历史
     document.addEventListener('DOMContentLoaded', function() {
         renderHistory();
     });
